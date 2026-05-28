@@ -248,6 +248,10 @@ body {
   letter-spacing: 0.25em;
 }
 
+#input-name {
+  margin-bottom: 16px;
+}
+
 /* ── Divider ────────────────────────────────────────────── */
 .divider {
   display: flex;
