@@ -2,18 +2,219 @@
    ¿Quién es más probable?  —  Google Sheets / Apps Script Edition
    ═══════════════════════════════════════════════════════════ */
 
-// ¡IMPORTANTE! Reemplaza esta URL con la URL de tu Web App de Google Apps Script
 const API_URL = 'https://script.google.com/macros/s/AKfycbwf3hunx-Z5JDTbfaklBmClidooS28958M6ydn_I9zatLOHpv_C25k8On8gzPfw3Bea/exec';
 
-const ADVANCE_DELAY = 7000;
+// ── Hardcoded Questions to bypass any GitHub Pages fetch issues ──
+const originalQuestions = [
+  "quién es más probable a decir 'damn' al ver a una fresca",
+  "quién es más probable a decir 'amai' al ver a la tía más fresca, damn",
+  "quién es más probable a mandarle un 'wake up' a la tía más fresca de madrugada",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una putilla, bro",
+  "quién es más probable a hacer de machista opresor con una fresca",
+  "quién es más probable a robar mi Huevox para impresionar a una fresca, animal",
+  "quién es más probable a irse con la primera putilla que le mire",
+  "quién es más probable a hacer de machista opresor con la tía más fresca, damn",
+  "quién es más probable a hacer de machista opresor con la de los pechotes tremendos, damn",
+  "quién es más probable a decir 'banco' al ver a una fresca, nel",
+  "quién es más probable a preferir una Estrella de lata antes que a una furcia, bro",
+  "quién es más probable a hacer de machista opresor con la de los pechotes tremendos",
+  "quién es más probable a actuar como un animal y soltar ganas de cagar incontrolables en un bar, sel",
+  "quién es más probable a decir 'banco' al ver a una de buenos pechotes, banco",
+  "quién es más probable a hacer de machista opresor con una furcia",
+  "quién es más probable a preferir una Estrella bien fría antes que a una fresca",
+  "quién es más probable a robar mi Huevox para impresionar a una de buenos pechotes, banco",
+  "quién es más probable a decir 'amai' al ver a la de los pechotes tremendos, sel",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia",
+  "quién es más probable a decir 'amai' al ver a una fresca, nel",
+  "quién es más probable a tener un tapacorrer brutal tras beberse una Estrella bien fría, bro",
+  "quién es más probable a decir 'wake up' al ver a una fresca",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, amai",
+  "quién es más probable a hacer de machista opresor con una putilla, wake up",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una putilla",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una putilla, sel",
+  "quién es más probable a decir 'banco' al ver a una de buenos pechotes",
+  "quién es más probable a mandarle un 'wake up' a la de los pechotes tremendos de madrugada",
+  "quién es más probable a decir 'amai' al ver a una de buenos pechotes, amai",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada, nel",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una fresca, amai",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una putilla, nel",
+  "quién es más probable a decir 'damn' al ver a la tía más fresca, sel",
+  "quién es más probable a hacer de machista opresor con una de buenos pechotes, animal",
+  "quién es más probable a preferir mi Estrella Galicia antes que a una de buenos pechotes",
+  "quién es más probable a tener ganas de cagar incontrolables tras beberse mi Estrella Galicia, bro",
+  "quién es más probable a decir 'sel' al ver a una furcia, sel",
+  "quién es más probable a decir 'amai' al ver a una de buenos pechotes",
+  "quién es más probable a ir a soltar un tapacorrer al baño de la discoteca",
+  "quién es más probable a decir 'amai' al ver a la tía más fresca, bro",
+  "quién es más probable a robar mi Huevox para impresionar a una putilla, amai",
+  "quién es más probable a mandarle un 'wake up' a la tía más fresca de madrugada, sel",
+  "quién es más probable a decir 'nel' al ver a la tía más fresca",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la tía más fresca",
+  "quién es más probable a robar mi Huevox para impresionar a una furcia, wake up",
+  "quién es más probable a decir 'sel' a irse de putas con los chavales",
+  "quién es más probable a hacer de machista opresor con la tía más fresca",
+  "quién es más probable a decir 'banco' al ver a una fresca",
+  "quién es más probable a preferir una Estrella bien fría antes que a una de buenos pechotes, animal",
+  "quién es más probable a hacer de machista opresor con una de buenos pechotes",
+  "quién es más probable a mandarle un 'wake up' a la tía más fresca de madrugada, damn",
+  "quién es más probable a beberse diez Estrellas del tirón, damn",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la tía más fresca, sel",
+  "quién es más probable a actuar como un animal y soltar ganas de cagar incontrolables en un bar, amai",
+  "quién es más probable a actuar como un animal y soltar ganas de cagar incontrolables en un bar",
+  "quién es más probable a soltar un 'damn' cuando pasa una fresca",
+  "quién es más probable a atascar mi baño con un tapacorrer de kilo",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una fresca, bro",
+  "quién es más probable a hacer de machista opresor con la tía más fresca, bro",
+  "quién es más probable a actuar como un animal y soltar diarrea explosiva en un bar, damn",
+  "quién es más probable a decir 'nel' cuando le ofrecen agua en vez de cerveza",
+  "quién es más probable a tener diarrea explosiva tras beberse una Estrella",
+  "quién es más probable a actuar como un animal y soltar ganas de cagar incontrolables en un bar, wake up",
+  "quién es más probable a decir 'wake up' al ver a una fresca, bro",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada, wake up",
+  "quién es más probable a robar mi Huevox para impresionar a una putilla, nel",
+  "quién es más probable a preferir una Estrella antes que a la tía más fresca",
+  "quién es más probable a robar mi Huevox para impresionar a la de los pechotes tremendos, sel",
+  "quién es más probable a hacer un comentario de machista opresor en público",
+  "quién es más probable a fijarse sólo en los pechotes, bro",
+  "quién es más probable a tener un tapacorrer brutal tras beberse mi Estrella Galicia, nel",
+  "quién es más probable a tener un tapacorrer brutal tras beberse mi Estrella Galicia, animal",
+  "quién es más probable a tener que salir corriendo por la diarrea",
+  "quién es más probable a actuar como un animal y soltar una diarrea que flipas en un bar",
+  "quién es más probable a robar mi Huevox para impresionar a la tía más fresca",
+  "quién es más probable a hacer de machista opresor con la de los pechotes tremendos, sel",
+  "quién es más probable a decir 'damn' al ver a una putilla, bro",
+  "quién es más probable a mandarle un 'wake up' a una fresca de madrugada, bro",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia, bro",
+  "quién es más probable a robar mi Huevox para impresionar a una fresca, bro",
+  "quién es más probable a preferir una Estrella bien fría antes que a la tía más fresca, animal",
+  "quién es más probable a tener un tapacorrer brutal tras beberse mi Estrella Galicia",
+  "quién es más probable a preferir mi Estrella Galicia antes que a una furcia, bro",
+  "quién es más probable a levantarse con diarrea y pedir otra Estrella",
+  "quién es más probable a decir 'banco' al ver a una furcia",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la tía más fresca, damn",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella bien fría, damn",
+  "quién es más probable a mandarle un 'wake up' a la de los pechotes tremendos de madrugada, animal",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, animal",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, sel",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, damn",
+  "quién es más probable a actuar como un animal y soltar diarrea explosiva en un bar",
+  "quién es más probable a robar mi Huevox para impresionar a la tía más fresca, wake up",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una putilla, amai",
+  "quién es más probable a tener diarrea explosiva tras beberse una Estrella, wake up",
+  "quién es más probable a decir 'damn' al ver a la de los pechotes tremendos, nel",
+  "quién es más probable a preferir una Estrella de lata antes que a la tía más fresca, damn",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, animal",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella de lata",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella de lata, sel",
+  "quién es más probable a actuar como un animal y soltar ganas de cagar incontrolables en un bar, banco",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una de buenos pechotes",
+  "quién es más probable a robar mi Huevox para impresionar a una de buenos pechotes",
+  "quién es más probable a tener una diarrea que flipas tras beberse mi Estrella Galicia",
+  "quién es más probable a decir 'wake up' al ver a una putilla, sel",
+  "quién es más probable a preferir una Estrella de lata antes que a una fresca",
+  "quién es más probable a tener ganas de cagar incontrolables tras beberse mi Estrella Galicia",
+  "quién es más probable a exclamar 'amai' al ver unos pechotes enormes",
+  "quién es más probable a romper mi Huevox de un golpe",
+  "quién es más probable a decir 'sel' al ver a una furcia",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada, amai",
+  "quién es más probable a tener diarrea explosiva tras beberse una Estrella de lata, bro",
+  "quién es más probable a mandarle un 'wake up' a una furcia de madrugada, damn",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, nel",
+  "quién es más probable a decir 'banco' al ver a la de los pechotes tremendos",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una fresca",
+  "quién es más probable a mandarle un 'wake up' a la tía más fresca de madrugada, animal",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, banco",
+  "quién es más probable a cagarse encima de fiesta, animal",
+  "quién es más probable a robar mi Huevox para impresionar a una furcia, bro",
+  "quién es más probable a preferir una Estrella bien fría antes que a la de los pechotes tremendos",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia, sel",
+  "quién es más probable a mandarle un 'wake up' a la de los pechotes tremendos de madrugada, banco",
+  "quién es más probable a actuar como un animal y soltar diarrea explosiva en un bar, nel",
+  "quién es más probable a decir 'sel' al ver a la tía más fresca, damn",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada, sel",
+  "quién es más probable a hacer de machista opresor con una fresca, nel",
+  "quién es más probable a tener ganas de cagar incontrolables tras beberse una Estrella bien fría",
+  "quién es más probable a mandar 'wake up' por el grupo de empalmada",
+  "quién es más probable a robar mi Huevox para impresionar a la tía más fresca, banco",
+  "quién es más probable a actuar como un animal y soltar una diarrea que flipas en un bar, animal",
+  "quién es más probable a decir 'wake up' al ver a la tía más fresca, animal",
+  "quién es más probable a decir 'wake up' al ver a una putilla",
+  "quién es más probable a mandarle un 'wake up' a una furcia de madrugada",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia, damn",
+  "quién es más probable a actuar como un animal y soltar diarrea explosiva en un bar, sel",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la de los pechotes tremendos, bro",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia, wake up",
+  "quién es más probable a robar mi Huevox para impresionar a la de los pechotes tremendos",
+  "quién es más probable a pedir otra Estrella cuando ya no puede ni hablar",
+  "quién es más probable a robar mi Huevox para impresionar a una fresca",
+  "quién es más probable a decir 'wake up' al ver a una furcia, animal",
+  "quién es más probable a robarme cerveza del Huevox, nel",
+  "quién es más probable a decir 'banco' al ver a una putilla, animal",
+  "quién es más probable a decir 'wake up' al ver a la de los pechotes tremendos",
+  "quién es más probable a preferir mi Estrella Galicia antes que a una putilla, damn",
+  "quién es más probable a tener un tapacorrer brutal tras beberse una Estrella de lata, wake up",
+  "quién es más probable a decir 'damn' al ver a una furcia, banco",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, banco",
+  "quién es más probable a decir 'banco' a la peor idea de la noche",
+  "quién es más probable a mandar a fregar a alguna pesada, wake up",
+  "quién es más probable a robar mi Huevox para impresionar a una furcia",
+  "quién es más probable a mandarle un 'wake up' a una de buenos pechotes de madrugada, bro",
+  "quién es más probable a tirarse a la más fresca del local",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella bien fría, wake up",
+  "quién es más probable a decir 'nel' al ver a la de los pechotes tremendos",
+  "quién es más probable a actuar como un animal y soltar una diarrea que flipas en un bar, damn",
+  "quién es más probable a hacer de machista opresor con una furcia, nel",
+  "quién es más probable a robar mi Huevox para impresionar a una putilla",
+  "quién es más probable a preferir una Estrella antes que a la de los pechotes tremendos, animal",
+  "quién es más probable a actuar como un animal y soltar una diarrea que flipas en un bar, amai",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la de los pechotes tremendos, nel",
+  "quién es más probable a robar mi Huevox para impresionar a la de los pechotes tremendos, bro",
+  "quién es más probable a tener un tapacorrer brutal tras beberse una Estrella bien fría",
+  "quién es más probable a preferir una Estrella bien fría antes que a una putilla",
+  "quién es más probable a hacer de machista opresor con una de buenos pechotes, amai",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, wake up",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella bien fría",
+  "quién es más probable a preferir una Estrella antes que a la de los pechotes tremendos",
+  "quién es más probable a tener un tapacorrer brutal tras beberse una Estrella bien fría, animal",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, damn",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada",
+  "quién es más probable a preferir mi Estrella Galicia antes que a una putilla",
+  "quién es más probable a tener diarrea explosiva tras beberse mi Estrella Galicia, sel",
+  "quién es más probable a acabar con una furcia a las 6 am, amai",
+  "quién es más probable a actuar como un animal y soltar diarrea explosiva en un bar, banco",
+  "quién es más probable a tener diarrea en el peor puto momento",
+  "quién es más probable a comportarse como un puto animal borracho",
+  "quién es más probable a decir 'banco' al ver a la tía más fresca, damn",
+  "quién es más probable a preferir una Estrella antes que a una putilla, nel",
+  "quién es más probable a tener diarrea explosiva tras beberse mi Estrella Galicia",
+  "quién es más probable a preferir una Estrella antes que a una de buenos pechotes, wake up",
+  "quién es más probable a preferir mi Estrella Galicia antes que a la tía más fresca, damn",
+  "quién es más probable a mandarle un 'wake up' a la tía más fresca de madrugada, bro",
+  "quién es más probable a decir 'wake up' al ver a una putilla, wake up",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a la tía más fresca, bro",
+  "quién es más probable a mandarle un 'wake up' a una putilla de madrugada, sel",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una de buenos pechotes, banco",
+  "quién es más probable a hacer de machista opresor con una putilla",
+  "quién es más probable a tratar el Huevox como si fuera su hijo, banco",
+  "quién es más probable a decir 'banco' al ver a la de los pechotes tremendos, banco",
+  "quién es más probable a preferir una Estrella bien fría antes que a una furcia",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una fresca, banco",
+  "quién es más probable a dejar un tapacorrer y echarle la culpa a una furcia, nel",
+  "quién es más probable a actuar como un animal y soltar un tapacorrer brutal en un bar, nel",
+  "quién es más probable a tener una diarrea que flipas tras beberse una Estrella",
+  "quién es más probable a hacer de machista opresor con la tía más fresca, amai",
+  "quién es más probable a robar mi Huevox para impresionar a una de buenos pechotes, sel",
+  "quién es más probable a mandarle un 'wake up' a la de los pechotes tremendos de madrugada, nel"
+];
 
 // ── State ──────────────────────────────────────────────────
 let myId = '';
 let myName = '';
 let roomCode = '';
-let isHost = false;
 let hasVoted = false;
 let isReady = false;
+let allQuestions = [...originalQuestions];
 
 let pollInterval = null;
 let lastStateStr = '';
@@ -51,7 +252,7 @@ const dom = {
   votesTotal: document.getElementById('votes-total'),
   roundQuestion: document.getElementById('round-question'),
   roundVotes: document.getElementById('round-votes'),
-  countdownBar: document.getElementById('countdown-bar'),
+  btnNextQuestion: document.getElementById('btn-next-question'),
   finalRanking: document.getElementById('final-ranking'),
   btnPlayAgain: document.getElementById('btn-play-again'),
 };
@@ -89,38 +290,62 @@ function log(msg) {
   console.log(`[QEMP] ${msg}`);
 }
 
-// ── API Communication ──────────────────────────────────────
-async function apiCall(action, data = {}) {
-  data.action = action;
-  try {
-    // Avoid setting Content-Type to prevent CORS preflight requests on Google Apps Script
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("API Error:", error);
-    return { error: error.message };
+// Simple seeded PRNG (mulberry32)
+function seededRandom(seedStr) {
+  let h = 0xdeadbeef;
+  for(let i = 0; i < seedStr.length; i++)
+      h = Math.imul(h ^ seedStr.charCodeAt(i), 2654435761);
+  let a = h ^ (h >>> 16);
+  return function() {
+    a += 0x6D2B79F5;
+    let t = a;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
   }
 }
 
-async function loadQuestions() {
-  const resp = await fetch('preguntas.txt');
-  if (!resp.ok) throw new Error('No se encontró el archivo de preguntas');
-  const text = await resp.text();
-  const questions = text.split('\n').map((q) => q.trim()).filter((q) => q.length > 0);
-  if (questions.length === 0) throw new Error('El archivo de preguntas está vacío');
-  log(`Loaded ${questions.length} questions`);
-  return questions;
+function shuffleQuestions(questions, seed) {
+  const arr = [...questions]; // copy
+  const rng = seededRandom(seed);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ── API Communication (JSONP to completely bypass CORS) ────
+function apiCall(action, data = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonp_' + Math.round(100000 * Math.random());
+    window[callbackName] = function(response) {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve(response);
+    };
+    
+    const script = document.createElement('script');
+    let url = API_URL + '?action=' + action + '&callback=' + callbackName;
+    for (let key in data) {
+       url += '&' + key + '=' + encodeURIComponent(data[key]);
+    }
+    
+    script.src = url;
+    script.onerror = () => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('No se pudo conectar (¿Quizás necesites iniciar sesión en Google en tu navegador?)'));
+    };
+    document.body.appendChild(script);
+  });
 }
 
 // ── Polling & State Management ─────────────────────────────
 async function pollState() {
   if (!roomCode || !myId) return;
   try {
-    const response = await fetch(`${API_URL}?action=poll&roomCode=${roomCode}&playerId=${myId}`);
-    const data = await response.json();
+    const data = await apiCall("poll", { roomCode: roomCode, playerId: myId });
     
     if (data.error) {
       if (data.error === "Room not found") {
@@ -142,17 +367,13 @@ async function pollState() {
 }
 
 function handleStateUpdate(state) {
-  // Update players list
   handlePlayersUpdate(state.players);
 
-  // Manage Screen Transitions
   if (state.gameState === 'lobby') {
     if (!screens.lobby.classList.contains('active')) showScreen('lobby');
-    // reset vote state
     hasVoted = false;
   } else if (state.gameState === 'playing') {
     const isNewQuestion = !screens.question.classList.contains('active') || dom.questionNumber.textContent !== String(state.currentQuestionIndex + 1);
-    
     if (isNewQuestion) {
         handleNewQuestion(state);
     } else {
@@ -168,25 +389,18 @@ function handleStateUpdate(state) {
     }
   }
 
-  // Host Logic for auto-advancing rounds
-  if (isHost) {
+  // Determine an invisible "Room Leader" for automated triggers (so we don't spam API)
+  const isRoomLeader = state.players.length > 0 && state.players[0].id === myId;
+
+  if (isRoomLeader) {
     if (state.gameState === 'lobby') {
       const allReady = state.players.length >= 2 && state.players.every(p => p.ready);
       if (allReady && !window.startingGame) {
          window.startingGame = true;
-         hostStartGame();
-      }
-    } else if (state.gameState === 'showing-results') {
-      if (!window.advanceTimer) {
-        window.advanceTimer = setTimeout(() => {
-          apiCall('nextQuestion', { playerId: myId });
-          window.advanceTimer = null;
-        }, ADVANCE_DELAY);
-      }
-    } else {
-      if (window.advanceTimer) {
-         clearTimeout(window.advanceTimer);
-         window.advanceTimer = null;
+         apiCall('start', { playerId: myId }).then(() => {
+             window.startingGame = false;
+             pollState(); // Force instant refresh
+         });
       }
     }
   }
@@ -200,16 +414,6 @@ function handleStateUpdate(state) {
   }
 }
 
-async function hostStartGame() {
-  try {
-     const questions = await loadQuestions();
-     await apiCall('start', { playerId: myId, questions: questions });
-  } catch(e) {
-     showError(e.message);
-  }
-  window.startingGame = false;
-}
-
 // ── UI Updaters ────────────────────────────────────────────
 
 function handlePlayersUpdate(players) {
@@ -220,7 +424,6 @@ function handlePlayersUpdate(players) {
       <div class="player-item ${p.ready ? 'ready' : ''}" style="animation-delay: ${i * 0.06}s">
         <span class="player-avatar">${getInitial(p.name)}</span>
         <span class="player-name">${escapeHtml(p.name)}</span>
-        ${p.isHost ? '<span class="player-tag">HOST</span>' : ''}
         <span class="player-status">${p.ready ? '✅' : '⏳'}</span>
       </div>`
     )
@@ -231,9 +434,11 @@ function handleNewQuestion(state) {
   hasVoted = false;
 
   dom.questionNumber.textContent = state.currentQuestionIndex + 1;
-  dom.totalQuestions.textContent = state.totalQuestions;
-  dom.progressFill.style.width = `${((state.currentQuestionIndex + 1) / state.totalQuestions) * 100}%`;
-  dom.questionText.textContent = state.currentQuestion + '?';
+  dom.totalQuestions.textContent = allQuestions.length;
+  dom.progressFill.style.width = `${((state.currentQuestionIndex + 1) / allQuestions.length) * 100}%`;
+  
+  const questionText = allQuestions[state.currentQuestionIndex] || "Pregunta desconocida";
+  dom.questionText.textContent = questionText + '?';
 
   dom.voteOptions.innerHTML = state.players
     .map(
@@ -255,11 +460,12 @@ function handleNewQuestion(state) {
       btn.classList.add('selected');
 
       const votedName = btn.dataset.name;
-
-      apiCall('vote', { playerId: myId, targetName: votedName });
-
+      // Show waiting text instantly for snappy UI
       dom.voteStatus.classList.remove('hidden');
       if (navigator.vibrate) navigator.vibrate(40);
+      
+      apiCall('vote', { playerId: myId, targetName: votedName, roomCode: roomCode })
+        .then(() => pollState()); // Instant refresh
     });
   });
 
@@ -277,7 +483,8 @@ function handleVoteUpdate(state) {
 }
 
 function handleRoundResults(state) {
-  dom.roundQuestion.textContent = '¿Quién es más probable que ' + state.currentQuestion + '?';
+  const questionText = allQuestions[state.currentQuestionIndex] || "Pregunta desconocida";
+  dom.roundQuestion.textContent = '¿Quién es más probable que ' + questionText + '?';
 
   const sorted = Object.entries(state.roundResults).sort((a, b) => b[1] - a[1]);
   const maxVotes = Math.max(...sorted.map(([, v]) => v), 1);
@@ -300,10 +507,6 @@ function handleRoundResults(state) {
         </div>`;
     })
     .join('');
-
-  dom.countdownBar.style.animation = 'none';
-  dom.countdownBar.offsetHeight;
-  dom.countdownBar.style.animation = `countdown ${ADVANCE_DELAY / 1000}s linear forwards`;
 
   showScreen('roundResults');
 }
@@ -336,25 +539,18 @@ function handleGameOver(state) {
 
 // ── Event Listeners ────────────────────────────────────────
 
-// Create Room
 dom.btnCreate.addEventListener('click', async () => {
-  if (!API_URL || API_URL.includes('URL_DE_TU_WEB_APP')) {
-     showError("No has configurado el API_URL en app.js");
-     return;
-  }
   const name = dom.inputName.value.trim();
   if (!name) { showError('Escribe tu nombre'); return; }
   if (name.length > 15) { showError('Nombre demasiado largo (máx. 15)'); return; }
 
   myName = name;
-
   dom.btnCreate.disabled = true;
   dom.btnJoin.disabled = true;
   showScreen('connecting');
   dom.connectingText.textContent = 'Creando sala en Google Sheets…';
 
   const res = await apiCall('create', { name: myName });
-  
   dom.btnCreate.disabled = false;
   dom.btnJoin.disabled = false;
   
@@ -364,20 +560,18 @@ dom.btnCreate.addEventListener('click', async () => {
   } else {
     roomCode = res.roomCode;
     myId = res.playerId;
-    isHost = res.isHost;
+    
+    // Aleatorizar preguntas basándonos en el código de la sala
+    allQuestions = shuffleQuestions(originalQuestions, roomCode);
+    
     dom.roomCodeValue.textContent = roomCode;
     showScreen('lobby');
-    pollInterval = setInterval(pollState, 2000);
+    pollInterval = setInterval(pollState, 1500); // Polling más rápido (1.5s)
     log('Room created: ' + roomCode);
   }
 });
 
-// Join Room
 dom.btnJoin.addEventListener('click', async () => {
-  if (!API_URL || API_URL.includes('URL_DE_TU_WEB_APP')) {
-     showError("No has configurado el API_URL en app.js");
-     return;
-  }
   const name = dom.inputName.value.trim();
   const code = dom.inputCode.value.trim().toUpperCase();
 
@@ -394,7 +588,6 @@ dom.btnJoin.addEventListener('click', async () => {
   dom.connectingText.textContent = 'Conectando a la sala…';
 
   const res = await apiCall('join', { name: myName, roomCode: roomCode });
-
   dom.btnCreate.disabled = false;
   dom.btnJoin.disabled = false;
 
@@ -403,22 +596,21 @@ dom.btnJoin.addEventListener('click', async () => {
     showError(res.error);
   } else {
     myId = res.playerId;
-    isHost = res.isHost;
+    
+    // Aleatorizar preguntas basándonos en el código de la sala
+    allQuestions = shuffleQuestions(originalQuestions, roomCode);
+    
     dom.roomCodeValue.textContent = roomCode;
     showScreen('lobby');
-    pollInterval = setInterval(pollState, 2000);
+    pollInterval = setInterval(pollState, 1500); // Polling más rápido (1.5s)
     log('Joined room: ' + roomCode);
   }
 });
 
-// Enter key on inputs
 dom.inputName.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
-    if (dom.inputCode.value.trim()) {
-      dom.btnJoin.click();
-    } else {
-      dom.btnCreate.click();
-    }
+    if (dom.inputCode.value.trim()) dom.btnJoin.click();
+    else dom.btnCreate.click();
   }
 });
 
@@ -430,7 +622,6 @@ dom.inputCode.addEventListener('input', () => {
   dom.inputCode.value = dom.inputCode.value.toUpperCase();
 });
 
-// Copy room code
 dom.btnCopyCode.addEventListener('click', () => {
   navigator.clipboard.writeText(roomCode).then(() => {
     dom.btnCopyCode.textContent = '✅';
@@ -447,17 +638,24 @@ dom.btnCopyCode.addEventListener('click', () => {
   });
 });
 
-// Ready Toggle
 dom.btnReady.addEventListener('click', () => {
   isReady = !isReady;
-  apiCall('ready', { playerId: myId });
+  // Botón optimista
+  dom.btnReady.classList.toggle('ready', isReady);
+  dom.btnReadyText.textContent = isReady ? '¡Listo! ✓' : 'Estoy listo';
+  apiCall('ready', { playerId: myId }).then(() => pollState());
 });
 
-// Play Again
+dom.btnNextQuestion.addEventListener('click', () => {
+  dom.btnNextQuestion.disabled = true;
+  dom.btnNextQuestion.textContent = 'Cargando...';
+  apiCall('nextQuestion', { playerId: myId, totalQuestions: allQuestions.length }).then(() => {
+    dom.btnNextQuestion.disabled = false;
+    dom.btnNextQuestion.textContent = 'Siguiente pregunta ➔';
+    pollState(); // Instant refresh
+  });
+});
+
 dom.btnPlayAgain.addEventListener('click', () => {
-  if (isHost) {
-      apiCall('playAgain', { playerId: myId });
-  } else {
-      showScreen('lobby'); // The host click will sync everyone else via polling
-  }
+  apiCall('playAgain', { playerId: myId }).then(() => pollState());
 });
