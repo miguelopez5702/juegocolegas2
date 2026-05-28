@@ -1,5 +1,25 @@
-function setup() {
+function getSpreadsheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    var props = PropertiesService.getScriptProperties();
+    var id = props.getProperty('SS_ID');
+    if (id) {
+      try {
+        ss = SpreadsheetApp.openById(id);
+      } catch(e) {
+        ss = SpreadsheetApp.create("Base de Datos - Quien es mas probable");
+        props.setProperty('SS_ID', ss.getId());
+      }
+    } else {
+      ss = SpreadsheetApp.create("Base de Datos - Quien es mas probable");
+      props.setProperty('SS_ID', ss.getId());
+    }
+  }
+  return ss;
+}
+
+function setup() {
+  var ss = getSpreadsheet();
   var sheets = ["Game", "Players", "Votes"];
   sheets.forEach(function(s) {
     if (!ss.getSheetByName(s)) {
@@ -9,7 +29,7 @@ function setup() {
   
   var game = ss.getSheetByName("Game");
   if (game.getLastRow() === 0) {
-    game.appendRow(["roomCode", "state", "currentQuestionIndex", "questions", "roundResults"]);
+    game.appendRow(["roomCode", "state", "currentQuestionIndex", "roundResults"]);
   }
   
   var players = ss.getSheetByName("Players");
@@ -23,67 +43,46 @@ function setup() {
   }
 }
 
-function doPost(e) {
-  try {
-    var params = JSON.parse(e.postData.contents);
-    var action = params.action;
-    
-    // Auto setup
-    setup();
-    
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var result = {};
-    
-    switch(action) {
-      case "create":
-        result = createRoom(ss, params);
-        break;
-      case "join":
-        result = joinRoom(ss, params);
-        break;
-      case "ready":
-        result = toggleReady(ss, params);
-        break;
-      case "start":
-        result = startGame(ss, params);
-        break;
-      case "vote":
-        result = submitVote(ss, params);
-        break;
-      case "nextQuestion":
-        result = nextQuestion(ss, params);
-        break;
-      case "playAgain":
-        result = playAgain(ss, params);
-        break;
-      case "leave":
-        result = leaveRoom(ss, params);
-        break;
-      default:
-        result = { error: "Unknown action" };
-    }
-    
+// Convert response to JSONP format
+function jsonp(result, callback) {
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + JSON.stringify(result) + ')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } else {
     return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({error: error.message})).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
+// All actions handled via GET to support JSONP (bypassing CORS completely)
 function doGet(e) {
   try {
     var action = e.parameter.action;
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var callback = e.parameter.callback;
+    setup(); 
+    var ss = getSpreadsheet();
+    var result = {};
     
-    if (action === "poll") {
-      var roomCode = e.parameter.roomCode;
-      var state = getGameState(ss, roomCode);
-      return ContentService.createTextOutput(JSON.stringify(state)).setMimeType(ContentService.MimeType.JSON);
+    switch(action) {
+      case "create": result = createRoom(ss, e.parameter); break;
+      case "join": result = joinRoom(ss, e.parameter); break;
+      case "ready": result = toggleReady(ss, e.parameter); break;
+      case "start": result = startGame(ss, e.parameter); break;
+      case "vote": result = submitVote(ss, e.parameter); break;
+      case "nextQuestion": result = nextQuestion(ss, e.parameter); break;
+      case "playAgain": result = playAgain(ss, e.parameter); break;
+      case "leave": result = leaveRoom(ss, e.parameter); break;
+      case "poll": result = getGameState(ss, e.parameter.roomCode); break;
+      default: result = { status: "QEMP API is running JSONP", ss: ss.getUrl() };
     }
     
-    return ContentService.createTextOutput(JSON.stringify({status: "QEMP API is running"})).setMimeType(ContentService.MimeType.JSON);
+    return jsonp(result, callback);
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({error: error.message})).setMimeType(ContentService.MimeType.JSON);
+    return jsonp({error: error.message}, e.parameter.callback);
   }
+}
+
+// doPost is kept just in case, redirecting to GET logic
+function doPost(e) {
+  return doGet(e);
 }
 
 function generateId() {
@@ -113,7 +112,7 @@ function createRoom(ss, params) {
   clearSheet(votesSheet);
   
   var roomCode = generateRoomCode();
-  gameSheet.getRange(2, 1, 1, 5).setValues([[roomCode, "lobby", 0, "[]", "{}"]]);
+  gameSheet.getRange(2, 1, 1, 4).setValues([[roomCode, "lobby", 0, "{}"]]);
   
   var playerId = generateId();
   playersSheet.appendRow([playerId, params.name, false, true, 0]);
@@ -160,7 +159,6 @@ function toggleReady(ss, params) {
       break;
     }
   }
-  
   return { success: true };
 }
 
@@ -168,7 +166,7 @@ function startGame(ss, params) {
   var gameSheet = ss.getSheetByName("Game");
   gameSheet.getRange(2, 2).setValue("playing");
   gameSheet.getRange(2, 3).setValue(0);
-  gameSheet.getRange(2, 4).setValue(JSON.stringify(params.questions || []));
+  // Questions are no longer stored in the sheet to save space for GET requests.
   
   var votesSheet = ss.getSheetByName("Votes");
   clearSheet(votesSheet);
@@ -178,7 +176,6 @@ function startGame(ss, params) {
   for (var i = 1; i < data.length; i++) {
     playersSheet.getRange(i + 1, 5).setValue(0); // reset stats
   }
-  
   return { success: true };
 }
 
@@ -192,20 +189,17 @@ function submitVote(ss, params) {
   var votesSheet = ss.getSheetByName("Votes");
   var votesData = votesSheet.getDataRange().getValues();
   
-  // check if already voted
   for (var i = 1; i < votesData.length; i++) {
     if (votesData[i][0] === params.playerId && votesData[i][2] === qIndex) {
-      return { success: true }; // ignore double vote
+      return { success: true };
     }
   }
   
   votesSheet.appendRow([params.playerId, params.targetName, qIndex]);
   
-  // Check if all voted
   var playersSheet = ss.getSheetByName("Players");
   var numPlayers = playersSheet.getLastRow() - 1;
-  
-  var votesForQ = 1; // including this one
+  var votesForQ = 1;
   for (var j = 1; j < votesData.length; j++) {
     if (votesData[j][2] === qIndex) votesForQ++;
   }
@@ -213,7 +207,6 @@ function submitVote(ss, params) {
   if (votesForQ >= numPlayers && numPlayers > 0) {
     calculateRoundResults(ss, qIndex, numPlayers);
   }
-  
   return { success: true };
 }
 
@@ -239,7 +232,6 @@ function calculateRoundResults(ss, qIndex, numPlayers) {
     }
   }
   
-  // Update stats
   for (var i = 1; i < playersData.length; i++) {
     var name = playersData[i][1];
     var currentStats = playersData[i][4] || 0;
@@ -247,23 +239,22 @@ function calculateRoundResults(ss, qIndex, numPlayers) {
   }
   
   gameSheet.getRange(2, 2).setValue("showing-results");
-  gameSheet.getRange(2, 5).setValue(JSON.stringify(voteCounts));
+  gameSheet.getRange(2, 4).setValue(JSON.stringify(voteCounts)); // Results is now col 4
 }
 
 function nextQuestion(ss, params) {
   var gameSheet = ss.getSheetByName("Game");
   var qIndex = gameSheet.getRange(2, 3).getValue();
-  var questions = JSON.parse(gameSheet.getRange(2, 4).getValue() || "[]");
+  var totalQuestions = parseInt(params.totalQuestions) || 999;
   
   qIndex++;
   
-  if (qIndex >= questions.length) {
+  if (qIndex >= totalQuestions) {
     gameSheet.getRange(2, 2).setValue("game-over");
   } else {
     gameSheet.getRange(2, 2).setValue("playing");
     gameSheet.getRange(2, 3).setValue(qIndex);
   }
-  
   return { success: true };
 }
 
@@ -277,7 +268,6 @@ function playAgain(ss, params) {
   for (var i = 1; i < data.length; i++) {
     playersSheet.getRange(i + 1, 3).setValue(false); // ready = false
   }
-  
   return { success: true };
 }
 
@@ -291,7 +281,6 @@ function leaveRoom(ss, params) {
       break;
     }
   }
-  
   return { success: true };
 }
 
@@ -304,9 +293,7 @@ function getGameState(ss, roomCode) {
   
   var state = gameSheet.getRange(2, 2).getValue();
   var qIndex = gameSheet.getRange(2, 3).getValue();
-  var questionsStr = gameSheet.getRange(2, 4).getValue();
-  var questions = questionsStr ? JSON.parse(questionsStr) : [];
-  var roundResultsStr = gameSheet.getRange(2, 5).getValue();
+  var roundResultsStr = gameSheet.getRange(2, 4).getValue();
   var roundResults = roundResultsStr ? JSON.parse(roundResultsStr) : {};
   
   var playersSheet = ss.getSheetByName("Players");
@@ -331,9 +318,7 @@ function getGameState(ss, roomCode) {
   return {
     gameState: state,
     players: players,
-    currentQuestion: questions[qIndex] || "",
     currentQuestionIndex: qIndex,
-    totalQuestions: questions.length,
     votesCast: votesCast,
     roundResults: roundResults
   };
